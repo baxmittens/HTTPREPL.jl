@@ -101,6 +101,6 @@ function listen(; async=false)
 	return server
 end
 
-export @rREPL
+export @rREPL, deserialize
 
 end # module HTTPREPL

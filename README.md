@@ -35,11 +35,11 @@ x = 0:.1:2π
 y = sin.(x)
 
 @rREPL begin
-	using CairoMakie
-	f = Figure();
-	ax = Axis(f[1,1])
-	lines!(ax, $x, $y)
-	display(f)
+    using CairoMakie
+    f = Figure();
+    ax = Axis(f[1,1])
+    lines!(ax, $x, $y)
+    display(f)
 end
 ```
 

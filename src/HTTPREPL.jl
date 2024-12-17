@@ -9,8 +9,8 @@ mutable struct HTTPREPLSettings
 	IP::String
 	PORT::Int64	
 	PW::String
-	dict::Dict{Symbol,Any}
-	HTTPREPLSettings(IP::String,PORT::Int64,PW::String) = new(IP, PORT, PW)
+	evalmodule::Module
+	HTTPREPLSettings(IP::String,PORT::Int64,PW::String) = new(IP, PORT, PW, Main)
 end
 
 const SETTINGS = HTTPREPLSettings("127.0.0.1", 1234, "HTTPREPL2024!")
@@ -71,10 +71,11 @@ macro rREPL(expr)
 	end
 end
 
-function setup!(;ip::String=SETTINGS.IP, port::Int64=SETTINGS.PORT, pw::String=SETTINGS.PW)
+function setup!(;ip::String=SETTINGS.IP, port::Int64=SETTINGS.PORT, pw::String=SETTINGS.PW, evalmodule::Module=SETTINGS.evalmodule)
 	SETTINGS.IP = ip
 	SETTINGS.PORT = port
 	SETTINGS.PW = pw
+	SETTINGS.evalmodule = evalmodule
 	return nothing
 end
 
@@ -92,15 +93,15 @@ function listen(; async=false)
 		evalcode = pop!(payload, :evalcode)
 		for (key,val) in payload
 			expr = Meta.parse("$(string(key))=deserialize(IOBuffer(Vector{UInt8}($val)))")
-			Base.eval(HTTPREPL, expr)
+			Base.eval(SETTINGS.evalmodule, expr)
 		end
 		expr = Meta.parse(evalcode)
-		Base.eval(HTTPREPL, expr)
+		Base.eval(SETTINGS.evalmodule, expr)
 		return HTTP.Response(200, "ok")
 	end
 	return server
 end
 
-export @rREPL
+export @rREPL, deserialize
 
 end # module HTTPREPL

@@ -1,7 +1,7 @@
 # HTTPREPL.jl
 Evaluate Julia Code on a remote REPL over HTTP.
 
-This package is in a early development stage. There is an other Julia package, named (RemoteREPL.jl)[https://github.com/JuliaWeb/RemoteREPL.jl], which likely works better in most cases.
+This package is in an early development stage. There is an other Julia package, named (RemoteREPL.jl)[https://github.com/JuliaWeb/RemoteREPL.jl], which likely works better in most cases.
 
 ## Install
 
@@ -17,6 +17,7 @@ I will briefly describe my use-case here. Other applications are possible; the c
 Setting:
 
 Worker A: my local desktop with display and GPU.
+
 Worker B: compute server without display, GPU, X11, or else.
 
 Worker A:

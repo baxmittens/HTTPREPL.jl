@@ -3,11 +3,13 @@ module HTTPREPL
 
 using HTTP
 using JSON3
+using Serialization
 
 mutable struct HTTPREPLSettings
 	IP::String
 	PORT::Int64	
 	PW::String
+	dict::Dict{Symbol,Any}
 	HTTPREPLSettings(IP::String,PORT::Int64,PW::String) = new(IP, PORT, PW)
 end
 
@@ -37,7 +39,11 @@ function gen_json_var_pairs(vars)
 		y = Meta.quot(var)
 		push!(ex.args,
 			quote
-				$y => $x
+				begin
+					io = IOBuffer()
+					serialize(io, $x)
+					$y => take!(io)
+				end
 			end
 		)
 	end

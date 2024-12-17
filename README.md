@@ -16,21 +16,20 @@ I will briefly describe my use-case here. Other applications are possible; the c
 
 Setting:
 
-Machine A: server without display, GPU, X11, or else.
-Machine B: my local desktop with display and GPU.
+Worker A: my local desktop with display and GPU.
+Worker B: compute server without display, GPU, X11, or else.
 
-
-Machine A:
+Worker A:
 ```julia
 using HTTPREPL
-HTTPREPL.setup!(ip="127.0.0.1", port=1234, pw="test1234!")
+HTTPREPL.setup!(ip="ip of worker A", port=1234, pw="test1234!")
 HTTPREPL.listen()
 ```
 
-Machine B:
+Worker B:
 ```julia
 using HTTPREPL
-HTTPREPL.setup!(ip="127.0.0.1", port=1234, pw="test1234!")
+HTTPREPL.setup!(ip="ip of worker A", port=1234, pw="test1234!")
 
 x = 0:.1:2π
 y = sin.(x)
@@ -44,4 +43,4 @@ y = sin.(x)
 end
 ```
 
-Result: Plot appears on machine B.
+Result: Plot appears on worker A.

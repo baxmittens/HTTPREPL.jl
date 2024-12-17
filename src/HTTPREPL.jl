@@ -92,15 +92,15 @@ function listen(; async=false)
 		evalcode = pop!(payload, :evalcode)
 		for (key,val) in payload
 			expr = Meta.parse("$(string(key))=deserialize(IOBuffer(Vector{UInt8}($val)))")
-			Base.eval(expr)
+			Base.eval(HTTPREPL, expr)
 		end
 		expr = Meta.parse(evalcode)
-		Base.eval(expr)
+		Base.eval(HTTPREPL, expr)
 		return HTTP.Response(200, "ok")
 	end
 	return server
 end
 
-export @rREPL, deserialize
+export @rREPL
 
 end # module HTTPREPL

@@ -91,7 +91,7 @@ function listen(; async=false)
 		payload = Dict(JSON3.read(request.body))
 		evalcode = pop!(payload, :evalcode)
 		for (key,val) in payload
-			expr = Meta.parse("$(string(key))=deserialize(IOBuffer(convert(Vector{UInt8}($val)))")
+			expr = Meta.parse("$(string(key))=deserialize(IOBuffer(Vector{UInt8}($val)))")
 			Base.eval(expr)
 		end
 		expr = Meta.parse(evalcode)

@@ -10,7 +10,9 @@ mutable struct HTTPREPLSettings
 	PORT::Int64	
 	PW::String
 	evalmodule::Module
-	HTTPREPLSettings(IP::String,PORT::Int64,PW::String) = new(IP, PORT, PW, Main)
+	arr::Array{Any}
+	sendkwargs::Base.Pairs
+	HTTPREPLSettings(IP::String,PORT::Int64,PW::String) = new(IP, PORT, PW, Main, Any[], pairs(()))
 end
 
 const SETTINGS = HTTPREPLSettings("127.0.0.1", 1234, "HTTPREPL2024!")
@@ -53,7 +55,7 @@ end
 function send(payload)
 	url = "http://$(SETTINGS.IP):$(SETTINGS.PORT)"
 	headers = [("Content-Type", "application/json"), ("X-Auth-Creds", SETTINGS.PW)]
-	r = HTTP.request("POST", url, headers, JSON3.write(payload))
+	r = HTTP.request("POST", url, headers, JSON3.write(payload); SETTINGS.sendkwargs...)
 end
 
 macro rREPL(expr)
@@ -71,11 +73,12 @@ macro rREPL(expr)
 	end
 end
 
-function setup!(;ip::String=SETTINGS.IP, port::Int64=SETTINGS.PORT, pw::String=SETTINGS.PW, evalmodule::Module=SETTINGS.evalmodule)
+function setup!(;ip::String=SETTINGS.IP, port::Int64=SETTINGS.PORT, pw::String=SETTINGS.PW, evalmodule::Module=SETTINGS.evalmodule, sendkwargs::Base.Pairs=SETTINGS.sendkwargs)
 	SETTINGS.IP = ip
 	SETTINGS.PORT = port
 	SETTINGS.PW = pw
 	SETTINGS.evalmodule = evalmodule
+	SETTINGS.sendkwargs = sendkwargs
 	return nothing
 end
 
@@ -89,10 +92,12 @@ function listen(; async=false)
 		if !HTTP.headercontains(request, "X-Auth-Creds", SETTINGS.PW)
 			return HTTP.Response(401, "Invalid credentials")
 		end
+		empty!(SETTINGS.arr)
 		payload = Dict(JSON3.read(request.body))
 		evalcode = pop!(payload, :evalcode)
-		for (key,val) in payload
-			expr = Meta.parse("$(string(key))=deserialize(IOBuffer(Vector{UInt8}($val)))")
+		for (i,(key,val)) in enumerate(payload)
+			push!(SETTINGS.arr, deserialize(IOBuffer(Vector{UInt8}(val))))
+			expr = Meta.parse("$(string(key))=HTTPREPL.SETTINGS.arr[$i]")
 			Base.eval(SETTINGS.evalmodule, expr)
 		end
 		expr = Meta.parse(evalcode)

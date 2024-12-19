@@ -45,3 +45,7 @@ end
 ```
 
 Result: Plot appears on worker A.
+
+## Safety warning
+
+By `HTTPREPL.listen()` you allow for the execution of code over HTTP, which could be very dangerous. It is not recommended to listen to IPs which are publicly available. Best way to use this package is either in a closed network or to use it together with port forwarding via `ssh -L 1234:localhost:1234 username@server`. 

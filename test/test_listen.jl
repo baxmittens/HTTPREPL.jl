@@ -1,3 +1,3 @@
-include("../src/HTTPREPL.jl")
+using HTTPREPL
 HTTPREPL.setup!()
 HTTPREPL.listen()

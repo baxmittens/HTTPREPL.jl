@@ -100,7 +100,7 @@ end
 function jld2loadstring(name::String, dict::Dict{String,Any})
 	lstr = foldl((x,y)->x*", "*y, keys(dict))
 	rstr = foldl((x,y)->x*", "*y, map(x->"\""*x*"\"", collect(keys(dict))))
-	return "$lstr = load(\"$name\", $rstr)"
+	return "$lstr = load(joinpath(@__DIR__, \"$name\"), $rstr)"
 end
 
 function writerecord!(filename::String=randstring(15)*".jl"; timestamp=true)

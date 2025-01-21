@@ -98,8 +98,11 @@ function startrecord!()
 end
 
 function jld2loadstring(name::String, dict::Dict{String,Any})
+	#vardict = Dict{String,Any}((x[1:2]=="##" ? "var\"$x\"" : x) => y for (x,y) in dict)
+	#lstr = foldl((x,y)->x*", "*y, keys(vardict))
+	#rstr = foldl((x,y)->x*", "*y, map(x->"\""*escape_string(x)*"\"", collect(keys(vardict))))
 	lstr = foldl((x,y)->x*", "*y, keys(dict))
-	rstr = foldl((x,y)->x*", "*y, map(x->"\""*x*"\"", collect(keys(dict))))
+	rstr = foldl((x,y)->x*", "*y, map(x->"\""*escape_string(x)*"\"", collect(keys(dict))))
 	return "$lstr = load(joinpath(@__DIR__, \"$name\"), $rstr)"
 end
 
@@ -160,6 +163,15 @@ function writerecord!(filename::String=randstring(15)*".jl"; timestamp=true)
 	return nothing
 end
 
+function varname(key)
+	strkey = string(key)
+	if length(strkey)>1 && strkey[1:2] == "##"
+		return "var\"$strkey\""
+	else
+		return strkey
+	end
+end
+
 function listen(; async=false)
 	if async
 		servefun = HTTP.serve!
@@ -175,13 +187,16 @@ function listen(; async=false)
 		evalcode = pop!(payload, :evalcode)
 		for (i,(key,val)) in enumerate(payload)
 			push!(SETTINGS.arr, deserialize(IOBuffer(Vector{UInt8}(val))))
-			expr = Meta.parse("$(string(key))=HTTPREPL.SETTINGS.arr[$i]")
-			Base.eval(SETTINGS.evalmodule, expr)
-			expr = Meta.parse("HTTPREPL.SETTINGS.record.vars[\"$(string(key))\"]=HTTPREPL.SETTINGS.arr[$i]")
-			Base.eval(SETTINGS.evalmodule, expr)
+			#expr = Meta.parse("$(string(key))=HTTPREPL.SETTINGS.arr[$i]")
+			#Base.eval(SETTINGS.evalmodule, expr)
+			@eval SETTINGS.evalmodule $key = HTTPREPL.SETTINGS.arr[$i]
+			#expr = Meta.parse("HTTPREPL.SETTINGS.record.vars[\"$(string(key))\"]=HTTPREPL.SETTINGS.arr[$i]")
+			#Base.eval(SETTINGS.evalmodule, expr)
+			@eval SETTINGS.evalmodule HTTPREPL.SETTINGS.record.vars[$(varname(key))] = HTTPREPL.SETTINGS.arr[$i]
 		end
 		expr = Meta.parse(evalcode)
-		Base.eval(SETTINGS.evalmodule, expr)
+		#Base.eval(SETTINGS.evalmodule, expr)
+		@eval SETTINGS.evalmodule $expr
 		push!(SETTINGS.record.code, evalcode)
 		return HTTP.Response(200, "ok")
 	end

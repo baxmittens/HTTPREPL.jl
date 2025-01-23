@@ -120,7 +120,8 @@ function writerecord!(filename::String=randstring(15)*".jl"; timestamp=true)
 	end
 	dir1 = joinpath(".","rREPLRecords")
 	if !isdir(dir1)
-		run(`mkdir $dir1`)
+		#run(`mkdir $dir1`)
+		mkdir(dir1)
 	end
 	if timestamp
 		ts_str = Dates.format(now(), "yyyy_mm_dd_HH_MM_SS")

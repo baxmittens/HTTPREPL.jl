@@ -134,7 +134,8 @@ function writerecord!(filename::String=randstring(15)*".jl"; timestamp=true)
 		JULIA_PATH = joinpath(".","rREPLRecords",splitstr[1], julia_filename)
 	end
 	if !isdir(dir2)
-		run(`mkdir $dir2`)
+		#run(`mkdir $dir2`)
+		mkdir(dir2)
 	end
 	save(JLD2_PATH, SETTINGS.record.vars)
 	open(JULIA_PATH, "w") do f
